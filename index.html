@@ -41,7 +41,7 @@
   });
 
 
-// Event Publisher, publish linear and angular speed
+// Event Publisher (geometry_msgs/Twist)
   cmd_vel_listener = new ROSLIB.Topic({
     ros : ros,
     name : "/turtle1/cmd_vel",
@@ -65,6 +65,19 @@
     cmd_vel_listener.publish(twist);
   }
 
+//EVENT Pub (std_msgs/Int16MultiArray)
+  // function ros_topic_pub(value_a, value_b) {
+  //   var ros_topic = new ROSLIB.Message({
+  //     data: [value_a, value_b]
+  //   });
+  //   topic_puslisher.publish(ros_topic);
+  // }
+
+
+
+
+
+  
 // Create Joystick
   createJoystick = function () {
       var options = {

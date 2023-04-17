@@ -9,7 +9,7 @@
 
 <script type="text/javascript" type="text/javascript">
   var ros = new ROSLIB.Ros({
-    url : 'ws://192.168.1.103:9090'
+    url : 'ws://192.168.1.103:9090' //roscoreを起動しているPCと同じWifiに繋がっているタブレットやスマホからTopicを操作したい場合、"hostname -I"でroscoreの起動端末のIPアドレスを下記に記載する
   });
 
   ros.on('connection', function() {
@@ -24,19 +24,24 @@
     document.getElementById("status").innerHTML = "Closed";
   });
 
+
+// EVENT Listener, log pose xytheta on screen upon movement
   var txt_listener = new ROSLIB.Topic({
     ros : ros,
-    name : '/txt_msg',
-    messageType : 'std_msgs/String'
+    name : '/turtle1/pose',
+    messageType : 'turtlesim/Pose'
   });
 
   txt_listener.subscribe(function(mmmm) {
-    document.getElementById("msg").innerHTML = mmmm.data;
-    move(1, 1);
+    document.getElementById("pose_x").innerHTML = mmmm.x;
+    document.getElementById("pose_y").innerHTML = mmmm.y;
+    document.getElementById("pose_theta").innerHTML = mmmm.theta;
+    document.getElementById("linear_velocity").innerHTML = mmmm.linear_velocity;
+    document.getElementById("angular_velocity").innerHTML = mmmm.angular_velocity;
   });
 
 
-
+// Event Publisher, publish linear and angular speed
   cmd_vel_listener = new ROSLIB.Topic({
     ros : ros,
     name : "/turtle1/cmd_vel",
@@ -110,7 +115,11 @@
 <body>
   <h1>Simple ROS User Interface</h1>
   <p>Connection statussss: <span id="status"></span></p>
-  <p>Last /txt_msg received: <span id="msg"></span></p>
+  <p>pose_x: <span id="pose_x"></span></p>
+  <p>pose_y: <span id="pose_y"></span></p>
+  <p>pose_theta: <span id="pose_theta"></span></p>
+  <p>linear_velocity: <span id="linear_velocity"></span></p>
+  <p>angular_velocity: <span id="angular_velocity"></span></p>
   <div id="zone_joystick" style="position: relative;"></div>
 </body>
 </html>

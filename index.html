@@ -1,138 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<meta charset="utf-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Robot Web Controller</title>
+  <!-- joystick -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.js"></script>
+  <!-- roslib -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+  <!-- bootstrap CSS-->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <!-- bootstrap JS -->
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 
-<!-- <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script> -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
-
-<script type="text/javascript" type="text/javascript">
-  var ros = new ROSLIB.Ros({
-    url : 'ws://192.168.1.103:9090' //roscoreを起動しているPCと同じWifiに繋がっているタブレットやスマホからTopicを操作したい場合、"hostname -I"でroscoreの起動端末のIPアドレスを下記に記載する
-  });
-
-  ros.on('connection', function() {
-    document.getElementById("status").innerHTML = "Connected";
-  });
-
-  ros.on('error', function(error) {
-    document.getElementById("status").innerHTML = "Error";
-  });
-
-  ros.on('close', function() {
-    document.getElementById("status").innerHTML = "Closed";
-  });
-
-
-// EVENT Listener, log pose xytheta on screen upon movement
-  var txt_listener = new ROSLIB.Topic({
-    ros : ros,
-    name : '/turtle1/pose',
-    messageType : 'turtlesim/Pose'
-  });
-
-  txt_listener.subscribe(function(mmmm) {
-    document.getElementById("pose_x").innerHTML = mmmm.x;
-    document.getElementById("pose_y").innerHTML = mmmm.y;
-    document.getElementById("pose_theta").innerHTML = mmmm.theta;
-    document.getElementById("linear_velocity").innerHTML = mmmm.linear_velocity;
-    document.getElementById("angular_velocity").innerHTML = mmmm.angular_velocity;
-  });
+  <!-- Vue -->
+  <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <!-- style -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/css/fontawesome-all.min.css">
 
 
-// Event Publisher (geometry_msgs/Twist)
-  cmd_vel_listener = new ROSLIB.Topic({
-    ros : ros,
-    name : "/turtle1/cmd_vel",
-    // name : "/car/diff_drive_controller/cmd_vel",
-    messageType : 'geometry_msgs/Twist'
-  });
-
-  move = function (linear, angular) {
-    var twist = new ROSLIB.Message({
-      linear: {
-        x: linear,
-        y: 0,
-        z: 0
-      },
-      angular: {
-        x: 0,
-        y: 0,
-        z: angular
-      }
-    });
-    cmd_vel_listener.publish(twist);
-  }
-
-//EVENT Pub (std_msgs/Int16MultiArray)
-  // function ros_topic_pub(value_a, value_b) {
-  //   var ros_topic = new ROSLIB.Message({
-  //     data: [value_a, value_b]
-  //   });
-  //   topic_puslisher.publish(ros_topic);
-  // }
-
-
-
-
-
-  
-// Create Joystick
-  createJoystick = function () {
-      var options = {
-        zone: document.getElementById('zone_joystick'),
-        threshold: 0.1,
-        position: { left: 50 + '%' },
-        mode: 'static',
-        size: 150,
-        color: '#000000',
-      };
-      manager = nipplejs.create(options);
-
-      linear_speed = 0;
-      angular_speed = 0;
-
-      manager.on('start', function (event, nipple) {
-        timer = setInterval(function () {
-          move(linear_speed, angular_speed);
-        }, 25);
-        console.log("Movement Start!!!")
-      });
-
-      manager.on('move', function (event, nipple) {
-        max_linear = 5.0; // m/s
-        max_angular = 2.0; // rad/s
-        max_distance = 75.0; // pixels;
-        linear_speed = Math.sin(nipple.angle.radian) * max_linear * nipple.distance / max_distance;
-        angular_speed = -Math.cos(nipple.angle.radian) * max_angular * nipple.distance / max_distance;
-        console.log("Moving!!!")
-      });
-
-      manager.on('end', function () {
-        if (timer) {
-          clearInterval(timer);
-        }
-        self.move(0, 0);
-        console.log("Movement End!!!")
-      });
-
-    }
-
-    window.onload = function () {
-      createJoystick();
-    }
-</script>
 </head>
 
 <body>
-  <h1>Simple ROS User Interface</h1>
-  <p>Connection statussss: <span id="status"></span></p>
-  <p>pose_x: <span id="pose_x"></span></p>
-  <p>pose_y: <span id="pose_y"></span></p>
-  <p>pose_theta: <span id="pose_theta"></span></p>
-  <p>linear_velocity: <span id="linear_velocity"></span></p>
-  <p>angular_velocity: <span id="angular_velocity"></span></p>
-  <div id="zone_joystick" style="position: relative;"></div>
+  <div id="app" class="container">
+    <div class="jumbotron">
+      <h1>Robot Web Controller <i class="fa fa-robot"></i> </h1>
+      <h2>{{ greeting }}</h2>
+    </div>
+    <!-- Connect to Websocket -->
+    <div class="row">
+      <div class="col-md-6">
+        <h4>Connection status</h4>
+
+        <p class="text-success" v-if="connected">Connected!</p>
+        <p class="text-danger" v-else>Not connected!</p>
+
+        <label>Websocket server address</label>
+        <input type="text" v-model="ws_address" />
+        <br><br>
+        <!-- execute connect & disconnet method in VUE app -->
+        <button @click="connect" :disabled="connected || ws_address ===''" class="btn btn-success">Connect!</button>
+        <button @click="disconnect" :disabled="!connected" class="btn btn-danger">Disconnect!</button>
+      </div>
+      <!-- LOG message -->
+      <div class="col-md-6" style="max-height:200px; overflow:auto;">
+        <h4>Log messages</h4>
+        <div>
+          <p v-for="leo in logs">
+            {{ leo }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <hr>
+
+    <!-- add joystick -->
+
+
+
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <h4>Command</h4>
+        <br>
+        <label>linear</label>
+        <input type="number" v-model.number="lin" />
+        <label>angular</label>
+        <input type="number" v-model.number="ang" />
+        <br><br>
+
+        <!-- <br><br>
+      <div class="col-ygup">
+        <div id="zone_joystick" style="position: relative;"></div>
+        <br><br> -->
+      </div>
+    </div>
+
+    <!-- Move! -->
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <button @click="move" class="btn btn-primary btn-lg">Move!</button>
+      </div>
+    </div>
+
+
+
+
+
+  </div>
+
+  <!-- add all JS script -->
+
+  <!-- <script type="text/javascript" src="joystick.js"></script> -->
+  <script type="text/javascript" src="main.js"></script>
 </body>
+
 </html>

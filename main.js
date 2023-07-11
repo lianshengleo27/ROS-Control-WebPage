@@ -58,7 +58,8 @@ var app = new Vue({
     setTopic_cmdvel: function () {
       this.cmd_pub = new ROSLIB.Topic({
         ros: this.ros,
-        name: '/cmd_vel',
+        // name: '/cmd_vel',
+        name: '/turtle1/cmd_vel',
         messageType: 'geometry_msgs/msg/Twist',
       });
     },

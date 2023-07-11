@@ -8,36 +8,77 @@
   <title>Robot Web Controller</title>
   <!-- joystick -->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.js"></script>
+
+  <!-- Three -->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+  <!-- Eventemitter -->
+  <script src="https://cdn.jsdelivr.net/npm/eventemitter2@5.0.1/lib/eventemitter2.min.js"></script>
+  <!-- EaseIJS -->
+  <script src="https://cdn.jsdelivr.net/npm/easeljs@1.0.2/lib/easeljs.min.js"></script>
   <!-- roslib -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.js"></script>
+  <!-- mjpeg -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/mjpeg-decoder@1.0.3/lib/mjpeg-decoder.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/mjpegcanvas@0.4.0/build/mjpegcanvas.min.js"></script>
+  <!-- ros2d -->
+  <script src="https://cdn.jsdelivr.net/npm/ros2d@0.10.0/build/ros2d.min.js"></script>
+  <!-- ros3d -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/ros3d@1/build/ros3d.js"></script> -->
+  <!-- <script type="module">import ros3d from 'https://cdn.jsdelivr.net/npm/ros3d@1.1.0/+esm'
+  </script> -->
+  <script src="./js/ros3djs/build/ros3d.js"></script>
+
   <!-- bootstrap CSS-->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
   <!-- bootstrap JS -->
   <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+    crossorigin="anonymous"></script>
 
   <!-- Vue -->
   <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
   <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <!-- style -->
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="assets/css/fontawesome-all.min.css">
+  
+  <!-- <script type="text/javascript" src="TrialDummy.js"></script> -->
 
 
 </head>
 
+<!-- <body onload="init()"> -->
 <body>
+<!-- <p>Run the following commands in the terminal then refresh this page.</p> -->
+  <!-- <ol>
+    <li>ros2 launch rosbridge_server rosbridge_websocket_launch.xml</li>
+    <li>ros2 run web_video_server web_video_server</li>
+    <li>ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py</li>
+    <li>ros2 run turtlebot3_teleop teleop_keyboard</li>
+    <li>ros2 launch nav2_map_server map_server.launch.py</li>
+    <li>ros2 launch ur_description view_ur.launch.py ur_type:=ur5</li>
+    <li>ros2 run tf2_web_republisher_py tf2_web_republisher</li>
+  </ol> -->
+  
   <div id="app" class="container">
     <div class="jumbotron">
+      <br><br>
       <h1>Robot Web Controller <i class="fa fa-robot"></i> </h1>
       <h2>{{ greeting }}</h2>
+      <div v-for="currency in info" class="currency">
+        {{ currency.description }}:
+        <span class="lighten">
+          <span v-html="currency.symbol"></span>{{ currency.rate_float }}
+        </span>
+      </div>
     </div>
     <!-- Connect to Websocket -->
     <div class="row">
       <div class="col-md-6">
-        <h4>Connection status</h4>
+        <h4>Connection statuss</h4>
 
         <p class="text-success" v-if="connected">Connected!</p>
         <p class="text-danger" v-else>Not connected!</p>
@@ -55,16 +96,16 @@
         <div>
           <p v-for="leo in logs">
             {{ leo }}
+            <!-- {{ info }} -->
           </p>
         </div>
       </div>
     </div>
     <hr>
 
-    <!-- add joystick -->
 
 
-
+    <!-- input linear and angular values -->
     <div class="row">
       <div class="col-md-12 text-center">
         <h4>Command</h4>
@@ -82,13 +123,28 @@
       </div>
     </div>
 
-    <!-- Move! -->
+    <!-- Buttom for different function!!!! -->
     <div class="row">
       <div class="col-md-12 text-center">
         <button @click="move" class="btn btn-primary btn-lg">Move!</button>
+        <button @click="reset" class="btn btn-danger btn-lg">Reset!</button>
+        <button @click="spawn" class="btn btn-secondary btn-lg">Spawn!</button>
+        <button @click="exec_py" class="btn btn-primary btn-lg">Exec!</button>
       </div>
+      <!-- Reset! -->
     </div>
 
+    <!-- <div id="map"></div> -->
+    <!-- <div id="urdf"></div> -->
+    <div id="mjpeg"></div>
+
+ 
+ 
+      <!-- <div class="col-md-4">
+        <video autoplay="true" id="webcam"></video>
+      </div> -->
+
+  
 
 
 
@@ -99,6 +155,8 @@
 
   <!-- <script type="text/javascript" src="joystick.js"></script> -->
   <script type="text/javascript" src="main.js"></script>
+  <!-- <script type="text/javascript" src="webcam.js"></script> -->
+
 </body>
 
 </html>
